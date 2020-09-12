@@ -38,7 +38,6 @@ def findMeta():
   META_FILE = findFile(META_FILE, META_GLOB)
   return META_FILE
 
-
 def validCWD():
 # is cwd a scrapbook directory with necessary files
   try:
@@ -51,16 +50,16 @@ def validCWD():
   if not toc or not meta:
     failure('Current working directory is not a scrapbook directory')
   else:
+    print('')
     print("Using files:")
+    print('-----------------------------')
     print("  meta: " + meta)
     print("   toc: " + toc)
-    print("-----------------------------")
     print("\n")
 
 def failure(fail_message):
     print(fail_message)
     sys.exit()
-
 
 # Toc and Metadata
 ###############################################################################
@@ -68,7 +67,6 @@ def failure(fail_message):
 # Singleton classes to get toc and meta
 
 def loadToc():
-# TODO:fix so globs to use toc*.js and meta*.js
   return parseJSON(TOC_FILE)
 
 class Toc(dict):
@@ -79,7 +77,6 @@ class Toc(dict):
         return cls._instance
 
 def loadMetadata():
-# TODO:fix so globs to use toc*.js and meta*.js
   return parseJSON(META_FILE)
 
 class Metadata(dict):
@@ -94,7 +91,6 @@ class Metadata(dict):
 
 # FolderIdToTitle and FolderTitleToId
 ###############################################################################
-
 
 def loadFolderIdToTitle():
 # make list of unique titles to associate with ids

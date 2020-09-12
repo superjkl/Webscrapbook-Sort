@@ -5,6 +5,9 @@ from app.data import Toc, Metadata, FolderIdToTitle, FolderTitleToId, writeTOC
 # printing folders
 ###############################################################################
 
+def isFolderById(id_val):
+  return id_val in FolderIdToTitle()
+
 #callback runs at each "node" or key in the dictionary and terminal values
 #in order recursion
 def traverseTree(tree: TreeInterface, start_node, nodeCheck, callback):
@@ -22,13 +25,10 @@ def traverseTree(tree: TreeInterface, start_node, nodeCheck, callback):
 def printFolders():
   tree = TocTree(Toc())
 
-  def is_folder(id_val):
-    return id_val in FolderIdToTitle()
-
   def print_folder(id_val, depth):
     print("  " * depth + " " + FolderIdToTitle()[id_val] )
 
-  traverseTree(tree, 'root', is_folder, print_folder)
+  traverseTree(tree, 'root', isFolderById, print_folder)
 
 ###############################################################################
 
@@ -36,17 +36,17 @@ def printFolders():
 # sorting folders
 ###############################################################################
 
+def isFolderByTitle(utitle):
+  return utitle in FolderTitleToId()
+
 def sortFolder(utitle, sort_key, sort_direction, recursive=''):
   metadata = Metadata()
   toc = Toc()
 
-  def is_folder(utitle):
-    return utitle in FolderTitleToId()
-
   def get_id(utitle):
     return FolderTitleToId()[utitle]
 
-  if not is_folder(utitle):
+  if not isFolderByTitle(utitle):
     print('This idname is not a folder in the tree')
     return
 
