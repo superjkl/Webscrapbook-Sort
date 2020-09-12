@@ -5,8 +5,8 @@
 # get* functions are singletons for load* functions
 
 import sys, argparse
-from data import validCWD
-from operations import printFolders, sortFolder
+from app.data import validCWD
+from app.operations import printFolders, sortFolder
 
 # Start script
 ###############################################################################

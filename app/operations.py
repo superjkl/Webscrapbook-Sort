@@ -1,6 +1,6 @@
 from natsort import natsorted, ns
-from tree import TreeInterface, TocTree
-from data import Toc, Metadata, FolderIdToTitle, FolderTitleToId, writeTOC
+from app.tree import TreeInterface, TocTree
+from app.data import Toc, Metadata, FolderIdToTitle, FolderTitleToId, writeTOC
 
 # printing folders
 ###############################################################################
