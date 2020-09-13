@@ -102,6 +102,7 @@ def loadFolderIdToTitle():
   # add implicit root folder (assumes no other folder can get the id of root)
   id_and_titles = [(k,v['title']) for (k,v) in tree_folders.items() ]
   id_and_titles.insert(0, ('root','root'))
+  id_and_titles.insert(0, ('recycle','recycle'))
   
   # creating (id) -> (unique title) dictionary
   titles = dict()

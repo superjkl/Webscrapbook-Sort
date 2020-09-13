@@ -19,11 +19,12 @@ def sortValidation(args):
 def sortConfimation(args):
   print('Sort options'\
   '\n-----------------------------\n'\
-  'folder: ' + args.folder + '\n'\
-  '   key: ' + args.sort_key + '\n'\
-  '   dir: ' + args.sort_dir + '\n'\
+  '   folder: ' + args.folder + '\n'\
+  '      key: ' + args.sort_key + '\n'\
+  '      dir: ' + args.sort_dir + '\n'\
+  'recursive: ' + str(args.recursive) + '\n'\
   '\n'\
-  'This operation cannot be reversed (your original file will be moved)\n'
+  'This operation cannot be reversed (your original file will be moved)\n'\
   'Type \'yes\' to sort with these options:', end=' ')
   if input() == "yes":
     pass
@@ -34,7 +35,7 @@ def sortConfimation(args):
 def sort(args):
   sortValidation(args)
   sortConfimation(args)
-  sortFolder(args.folder, args.sort_key, args.sort_dir)
+  sortFolder(args.folder, args.sort_key, args.sort_dir, args.recursive)
   pass
 
 # Start script
@@ -60,6 +61,13 @@ sort_parser.add_argument('sort_dir',
                     choices=['a','d'],
                     default='a',
                     help='direction of sort ascending or descending')
+sort_parser.add_argument('recursive',
+                    choices=[True,False],
+                    nargs='?',
+                    type=bool,
+                    default=False,
+                    help='recursively sort child directories')
+
 
 args = parser.parse_args()
 validCWD()

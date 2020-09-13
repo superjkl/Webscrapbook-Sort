@@ -32,3 +32,6 @@ class TocTree(TreeInterface):
       return self.toc[node]
     else:
       return []
+
+  def getToc(self):
+    return self.toc
