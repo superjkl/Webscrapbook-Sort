@@ -12,6 +12,10 @@ META_PREFIX = "scrapbook.meta("
 TOC_SUFFIX = ")"
 # META_SUFFIX = ")"
 
+def failure(fail_message):
+  print(fail_message)
+  sys.exit()
+
 def getCWD():
   return os.path.realpath(os.getcwd())
 
@@ -56,10 +60,6 @@ def validCWD():
     print("  meta: " + meta)
     print("   toc: " + toc)
     print("\n")
-
-def failure(fail_message):
-    print(fail_message)
-    sys.exit()
 
 # Toc and Metadata
 ###############################################################################
