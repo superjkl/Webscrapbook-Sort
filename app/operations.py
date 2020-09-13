@@ -1,16 +1,13 @@
 from natsort import natsorted, ns
-from app.tree import TreeInterface, TocTree, traverseTree
-from app.data import Toc, Metadata, FolderIdToTitle, FolderTitleToId, writeTOC
+from app.tree import TocTree, traverseTree
+from app.data import Toc, Metadata, getFolderTitle, getFolderId, isFolderByTitle, isFolderById, writeToc
 
 # printing folders
 ###############################################################################
 
-def isFolderById(id_val):
-  return id_val in FolderIdToTitle()
-
 def printFolders():
   def print_folder(id_val, depth):
-    print("  " * depth + " " + FolderIdToTitle()[id_val] )
+    print("  " * depth + " " + getFolderTitle(id_val) )
 
   traverseTree(TocTree(Toc()), 'root', isFolderById, print_folder)
 
@@ -20,18 +17,15 @@ def printFolders():
 # sorting folders
 ###############################################################################
 
-def isFolderByTitle(utitle):
-  return utitle in FolderTitleToId()
-
 def sortFolder(args):
   if not isFolderByTitle(args.folder):
     print('This idname is not a folder in the tree')
     return
 
-  sortTreeAtNode(FolderTitleToId()[args.folder], args.sort_key, args.sort_dir, args.recursive)
-  writeTOC(Toc())
+  sortTreeAtFolder(getFolderId(args.folder), args.sort_key, args.sort_dir, args.recursive)
+  writeToc(Toc())
 
-def sortTreeAtNode(node, sort_key, sort_direction, recursive):
+def sortTreeAtFolder(node, sort_key, sort_direction, recursive):
   def sortCurrentFolder(node, depth=0):
     sortFolderById(node, sort_key, sort_direction)
   
@@ -46,9 +40,11 @@ def sortFolderById(id, sort_key, sort_direction):
   metadata = Metadata()
   sort_direction = False if sort_direction == 'a' else True
 
-  toc[id] = natsorted(toc[id], key = lambda e : metadata[e][sort_key], alg=ns.IGNORECASE)
-  if sort_direction:
-    toc[id].reverse()
+  # empty dirs not at top level of toc
+  if id in toc:
+    toc[id] = natsorted(toc[id], key = lambda e : metadata[e][sort_key], alg=ns.IGNORECASE)
+    if sort_direction:
+      toc[id].reverse()
 
 ###############################################################################
 

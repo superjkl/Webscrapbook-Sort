@@ -1,50 +1,30 @@
-import os, sys, json, glob, collections
+import os, json, glob, collections
 from app.tree import TocTree, getListOfAllNodes
+from app.common import findFile, removeSuffix, removePrefix, removeLines, failure, parseJSON, areListElementsUnique, makeMappingOneToOne, invertDictionaryMap
 
-TOC_FILE = str("tree/toc.js")
-TOC_GLOB = "tree/toc*.js"
+TOC_FILE  = str("tree/toc.js")
+TOC_GLOB  = str("tree/toc*.js")
 META_FILE = str("tree/meta.js")
-META_GLOB = "tree/toc*.js"
-
+META_GLOB = str("tree/toc*.js")
 
 FILE_COMMENT = "/** \n * Feel free to edit this file, but keep data code valid JSON format.\n */\n"
-TOC_PREFIX = "scrapbook.toc("
-META_PREFIX = "scrapbook.meta("
-TOC_SUFFIX = ")"
-# META_SUFFIX = ")"
-
-def failure(fail_message):
-  print(fail_message)
-  sys.exit()
-
-def getCWD():
-  return os.path.realpath(os.getcwd())
-
-def findFile(file, glob_val):
-  cwd = getCWD()
-  # default name in default location
-  if os.path.isfile(cwd + '/' + file):
-      return file
-  else:
-    possible_files = glob.glob(glob_val)
-    if possible_files:
-      # TODO: allow choice of file so return list
-      return possible_files[0]
-    else:
-      return ""
-
-def findToc():
-  global TOC_FILE
-  TOC_FILE = findFile(TOC_FILE, TOC_GLOB)
-  return TOC_FILE
-
-def findMeta():
-  global META_FILE
-  META_FILE = findFile(META_FILE, META_GLOB)
-  return META_FILE
+TOC_PREFIX   = "scrapbook.toc("
+META_PREFIX  = "scrapbook.meta("
+TOC_SUFFIX   = ")"
+META_SUFFIX  = TOC_SUFFIX
 
 def validCWD():
 # is cwd a scrapbook directory with necessary files
+  def findToc():
+    global TOC_FILE
+    TOC_FILE = findFile(TOC_FILE, TOC_GLOB)
+    return TOC_FILE
+
+  def findMeta():
+    global META_FILE
+    META_FILE = findFile(META_FILE, META_GLOB)
+    return META_FILE
+
   try:
     os.path.isdir('./tree')
   except:
@@ -62,30 +42,54 @@ def validCWD():
     print("   toc: " + toc)
     print("\n")
 
+def writeToc(toc):
+  def backupToc():
+    try:
+      os.rename(TOC_FILE, TOC_FILE + '.bak')
+    except:
+      print(TOC_FILE + " backup already exists")
+
+  def writeNewToc(toc):
+    with open(TOC_FILE, "w") as file:
+      json_string = FILE_COMMENT + TOC_PREFIX + json.dumps(toc) + TOC_SUFFIX
+      file.write(json_string)
+  
+  backupToc()
+  writeNewToc(toc)
+
 # Toc and Metadata
 ###############################################################################
-
 # Singleton classes to get toc and meta
 
-def loadToc():
-  return parseJSON(TOC_FILE)
-
 class Toc(dict):
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = loadToc()
-        return cls._instance
+  @staticmethod
+  def loadToc():
+    def preprocess(string):
+      return removeSuffix(
+                removePrefix(
+                  removeLines(string, 3), TOC_PREFIX), TOC_SUFFIX)
+    return parseJSON(TOC_FILE, preprocess)
 
-def loadMetadata():
-  return parseJSON(META_FILE)
+  _instance = None
+  def __new__(cls):
+      if cls._instance is None:
+          cls._instance = cls.loadToc()
+      return cls._instance
 
 class Metadata(dict):
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = loadMetadata()
-        return cls._instance
+  @staticmethod
+  def loadMetadata():
+    def preprocess(string):
+      return removeSuffix(
+                removePrefix(
+                  removeLines(string, 3), META_PREFIX), META_SUFFIX)
+    return parseJSON(META_FILE, preprocess)
+
+  _instance = None
+  def __new__(cls):
+      if cls._instance is None:
+          cls._instance = cls.loadMetadata()
+      return cls._instance
 
 def getMetaEntry(id_val):
   return Metadata()[id_val]
@@ -96,102 +100,49 @@ def getMetaEntry(id_val):
 # FolderIdToTitle and FolderTitleToId
 ###############################################################################
 
-def areListElementsUnique(l):
-  return len(l) == len(set(l))
-
-def makeMappingOneToOne(mapping):
-  range_occurrences = dict()
-  for key, val in mapping.items():
-    if val in range_occurrences:
-      range_occurrences[val] += 1
-    else:
-      range_occurrences[val] = 0
-    mapping[key] = val + ( "" if not range_occurrences[val] else "-" + str(range_occurrences[val]) )
-
-def loadFolderIdToTitle():
-# make list of unique titles to associate with ids
-# TODO: return ids in order of table of contents
-  
-  def getFolderIds():
-    ids = getListOfAllNodes(TocTree(Toc()))
-    if not areListElementsUnique(ids):
-      failure('Ids in toc are not unique')
-    return list(filter(lambda id_val: getMetaEntry(id_val)['type'] == 'folder', ids))
-  
-  folders = getFolderIds()
-  folder_id_to_title = collections.OrderedDict({ id_val:getMetaEntry(id_val)['title'] for id_val in folders })
-  # add implicit root folder (assumes no other folder can get the id of root)
-  folder_id_to_title['root'] = 'root'
-  folder_id_to_title.move_to_end('root', last=False)
-
-  # (id) -> (unique title) dictionary
-  makeMappingOneToOne(folder_id_to_title)
-  return dict(folder_id_to_title)
-
 class FolderIdToTitle(dict):
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = loadFolderIdToTitle()
-        return cls._instance
+  @staticmethod
+  def loadFolderIdToTitle():
+  # make list of unique titles to associate with ids
+    def getFolderIds():
+      ids = getListOfAllNodes(TocTree(Toc()))
+      if not areListElementsUnique(ids):
+        failure('Ids in toc are not unique')
+      return list(filter(lambda id_val: getMetaEntry(id_val)['type'] == 'folder', ids))
+    
+    folders = getFolderIds()
+    folder_id_to_title = collections.OrderedDict({ id_val:getMetaEntry(id_val)['title'] for id_val in folders })
+    # add implicit root folder (assumes no other folder can get the id of root)
+    folder_id_to_title['root'] = 'root'
+    folder_id_to_title.move_to_end('root', last=False)
 
-def invertDictionaryMap(dictionary):
-  return {v: k for k, v in dictionary.items()}
+    # (id) -> (unique title) dictionary
+    makeMappingOneToOne(folder_id_to_title)
+    return dict(folder_id_to_title)
+
+  _instance = None
+  def __new__(cls):
+      if cls._instance is None:
+          cls._instance = cls.loadFolderIdToTitle()
+      return cls._instance
 
 class FolderTitleToId(dict):
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = invertDictionaryMap(FolderIdToTitle())
-        return cls._instance
+  _instance = None
+  def __new__(cls):
+      if cls._instance is None:
+          cls._instance = invertDictionaryMap(FolderIdToTitle())
+      return cls._instance
 
-###############################################################################
+def isFolderByTitle(utitle):
+  return utitle in FolderTitleToId()
 
+def isFolderById(id_val):
+  return id_val in FolderIdToTitle()
 
-# string functions
-###############################################################################
+def getFolderId(utitle):
+  return FolderTitleToId()[utitle]
 
-def removePrefix(text, prefix):
-  if text.startswith(prefix):
-        return text[len(prefix):]
-  return text
-
-def removeSuffix(text, suffix):
-  if text.endswith(suffix):
-        return text[:-1 * len(suffix)]
-  return text
-
-def removeLines(s, count):
-  s = s.split('\n', count)[-1]
-  
-  # file may have a single line left not terminated by a newline
-  #if s.find('\n') == -1:
-  #    return ''
-  return s
-
-def parseJSON(filename):
-  data = {}
-  with open(filename) as file:
-    json_string = file.read()
-    json_string = removeLines(json_string, 3)
-    json_string = removePrefix(json_string, TOC_PREFIX)
-    json_string = removePrefix(json_string, META_PREFIX)
-    json_string = removeSuffix(json_string, TOC_SUFFIX)
-    try:
-      data = json.loads(json_string)
-    except:
-      failure('Could not parse')
-  return data
-
-def writeTOC(tree):
-  #backup old toc
-  try:
-    os.rename('toc.js', 'toc.js.bak')
-  except:
-    print("toc.js backup already exists")
-  #write new toc
-  with open("toc.js", "w") as file:
-    json_string = FILE_COMMENT + TOC_PREFIX + json.dumps(tree) + TOC_SUFFIX
-    file.write(json_string)
+def getFolderTitle(id_val):
+  return FolderIdToTitle()[id_val]
 
 ###############################################################################

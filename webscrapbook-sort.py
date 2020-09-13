@@ -3,18 +3,25 @@
 # Run this script in the scrapbook directory you wish to sort
 
 import sys, argparse
-from app.data import validCWD, failure
-from app.operations import printFolders, sortFolder, isFolderByTitle
+from app.data import validCWD, isFolderByTitle
+from app.operations import printFolders, sortFolder
+import app.common as common
 
-# commands
-###############################################################################
-
+# folders command
+#####################
 def folders(args):
   printFolders()
 
+# sort command
+#####################
+def sort(args):
+  sortValidation(args)
+  sortConfimation(args)
+  sortFolder(args)
+
 def sortValidation(args):
   if not isFolderByTitle(args.folder):
-    failure('ERROR: Folder given does not exist')
+    common.failure('ERROR: Folder given does not exist')
 
 def sortConfimation(args):
   print('Sort options'\
@@ -27,12 +34,7 @@ def sortConfimation(args):
   'This operation cannot be reversed (your original file will be moved)\n'\
   'Type \'yes\' to sort with these options:', end=' ')
   if input() != "yes":
-    failure("Sort cancelled")
-
-def sort(args):
-  sortValidation(args)
-  sortConfimation(args)
-  sortFolder(args)
+    common.failure("Sort cancelled")
 
 # Start script
 ###############################################################################
@@ -72,13 +74,12 @@ args.func(args)
 
 
 '''
+TODO:
 verify function - runs to confirm changes before writing them
 check if same number of things in toc.js
 check same number of things in folder in toc.js
 check every id in toc.js exists in meta.js
-'''
 
-'''
 say number of things to be sorted
 say number of things sorted
 
