@@ -13,8 +13,14 @@ META_PREFIX  = "scrapbook.meta("
 TOC_SUFFIX   = ")"
 META_SUFFIX  = TOC_SUFFIX
 
-def validCWD():
+
+
+def validCWD(dir):
 # is cwd a scrapbook directory with necessary files
+  def setCWD(dir):
+    if dir:
+      os.chdir(dir)
+
   def findToc():
     global TOC_FILE
     TOC_FILE = findFile(TOC_FILE, TOC_GLOB)
@@ -25,6 +31,7 @@ def validCWD():
     META_FILE = findFile(META_FILE, META_GLOB)
     return META_FILE
 
+  setCWD(dir)
   try:
     os.path.isdir('./tree')
   except:

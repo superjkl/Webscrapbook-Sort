@@ -4,13 +4,9 @@ def failure(fail_message):
   print(fail_message)
   sys.exit()
 
-def getCWD():
-  return os.path.realpath(os.getcwd())
-
 def findFile(file, glob_val):
-  cwd = getCWD()
-  # default name in default location
-  if os.path.isfile(cwd + '/' + file):
+# default name in default location
+  if os.path.isfile(file):
       return file
   else:
     possible_files = glob.glob(glob_val)

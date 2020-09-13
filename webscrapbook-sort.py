@@ -40,6 +40,8 @@ def sortConfimation(args):
 ###############################################################################
 
 parser = argparse.ArgumentParser(description='Tool for sorting webscrapbook folders.')
+parser.add_argument('-d', help='webscrapbook directory')
+
 subparsers = parser.add_subparsers(help='sub-command help')
 
 # folders command
@@ -65,7 +67,7 @@ sort_parser.add_argument('-r',action='store_const', const=True,
 
 
 args = parser.parse_args()
-validCWD()
+validCWD(args.d)
 args.func(args)
 
 
