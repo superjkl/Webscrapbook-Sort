@@ -10,6 +10,7 @@ class TreeInterface:
     '''return list of children for current node'''
     pass
 
+
 class TocTree(TreeInterface):
   def __init__(self, toc: dict):
     self.toc = toc
@@ -35,3 +36,18 @@ class TocTree(TreeInterface):
 
   def getToc(self):
     return self.toc
+
+
+def traverseTree(tree: TreeInterface, start_node, nodeCheck, callback):
+# in order recursive traversal
+# callback runs on each node if nodeCheck is True
+  def recurse(tree, node, depth, callback):
+    if nodeCheck(node):
+      callback(node, depth)
+    
+    if not tree.hasChildren(node):
+      return
+
+    for child in tree.getChildren(node):
+      recurse(tree, child, depth + 1, callback)
+  recurse(tree, start_node, 0, callback)
