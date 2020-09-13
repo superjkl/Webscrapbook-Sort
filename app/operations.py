@@ -22,7 +22,7 @@ def sortFolder(args):
     print('This idname is not a folder in the tree')
     return
 
-  sortTreeAtFolder(getFolderId(args.folder), args.sort_key, args.sort_dir, args.recursive)
+  sortTreeAtFolder(getFolderId(args.folder), args.sort_key, args.sort_dir, args.r)
   writeToc(Toc())
 
 def sortTreeAtFolder(node, sort_key, sort_direction, recursive):

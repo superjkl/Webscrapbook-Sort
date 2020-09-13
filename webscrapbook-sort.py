@@ -29,7 +29,7 @@ def sortConfimation(args):
   '   folder: ' + args.folder + '\n'\
   '      key: ' + args.sort_key + '\n'\
   '      dir: ' + args.sort_dir + '\n'\
-  'recursive: ' + str(args.recursive) + '\n'\
+  'recursive: ' + str(args.r) + '\n'\
   '\n'\
   'This operation cannot be reversed (your original file will be moved)\n'\
   'Type \'yes\' to sort with these options:', end=' ')
@@ -43,7 +43,7 @@ parser = argparse.ArgumentParser(description='Tool for sorting webscrapbook fold
 subparsers = parser.add_subparsers(help='sub-command help')
 
 # folders command
-folders_parser = subparsers.add_parser('folders', aliases=['p'], help='print unique titles')
+folders_parser = subparsers.add_parser('folders', aliases=['f'], help='print unique titles')
 folders_parser.set_defaults(func=folders)
 
 
@@ -60,11 +60,7 @@ sort_parser.add_argument('sort_dir',
                     choices=['a','d'],
                     default='a',
                     help='direction of sort ascending or descending')
-sort_parser.add_argument('recursive',
-                    choices=[True,False],
-                    nargs='?',
-                    type=bool,
-                    default=False,
+sort_parser.add_argument('-r',action='store_const', const=True,
                     help='recursively sort child directories')
 
 
