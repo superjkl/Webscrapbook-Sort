@@ -1,4 +1,5 @@
-import os, sys, json, glob
+import os, sys, json, glob, collections
+from app.tree import TocTree, getListOfAllNodes
 
 TOC_FILE = str("tree/toc.js")
 TOC_GLOB = "tree/toc*.js"
@@ -86,35 +87,46 @@ class Metadata(dict):
             cls._instance = loadMetadata()
         return cls._instance
 
+def getMetaEntry(id_val):
+  return Metadata()[id_val]
+
 ###############################################################################
 
 
 # FolderIdToTitle and FolderTitleToId
 ###############################################################################
 
+def areListElementsUnique(l):
+  return len(l) == len(set(l))
+
+def makeMappingOneToOne(mapping):
+  range_occurrences = dict()
+  for key, val in mapping.items():
+    if val in range_occurrences:
+      range_occurrences[val] += 1
+    else:
+      range_occurrences[val] = 0
+    mapping[key] = val + ( "" if not range_occurrences[val] else "-" + str(range_occurrences[val]) )
+
 def loadFolderIdToTitle():
 # make list of unique titles to associate with ids
 # TODO: return ids in order of table of contents
-  metadata = Metadata()
-  tree_folders = dict(filter(lambda e: e[1]['type'] == 'folder', metadata.items()))
   
-  # get [(id, title), ...]
+  def getFolderIds():
+    ids = getListOfAllNodes(TocTree(Toc()))
+    if not areListElementsUnique(ids):
+      failure('Ids in toc are not unique')
+    return list(filter(lambda id_val: getMetaEntry(id_val)['type'] == 'folder', ids))
+  
+  folders = getFolderIds()
+  folder_id_to_title = collections.OrderedDict({ id_val:getMetaEntry(id_val)['title'] for id_val in folders })
   # add implicit root folder (assumes no other folder can get the id of root)
-  id_and_titles = [(k,v['title']) for (k,v) in tree_folders.items() ]
-  id_and_titles.insert(0, ('root','root'))
-  id_and_titles.insert(0, ('recycle','recycle'))
-  
-  # creating (id) -> (unique title) dictionary
-  titles = dict()
-  id_to_utitle = dict()
-  for id_val, title in id_and_titles:
-    if title in titles:
-      titles[title] += 1
-    else:
-      titles[title] = 0
-    title_occurences = titles[title]
-    id_to_utitle[id_val] = title + ( "" if not title_occurences else "-" + str(title_occurences) )
-  return id_to_utitle
+  folder_id_to_title['root'] = 'root'
+  folder_id_to_title.move_to_end('root', last=False)
+
+  # (id) -> (unique title) dictionary
+  makeMappingOneToOne(folder_id_to_title)
+  return dict(folder_id_to_title)
 
 class FolderIdToTitle(dict):
     _instance = None

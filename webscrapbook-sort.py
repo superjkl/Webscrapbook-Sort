@@ -4,16 +4,13 @@
 
 import sys, argparse
 from app.data import validCWD, failure
-from app.operations import printFolders, printAllFolderContents, sortFolder, isFolderByTitle
+from app.operations import printFolders, sortFolder, isFolderByTitle
 
 # commands
 ###############################################################################
 
 def folders(args):
   printFolders()
-
-def foldersPrintAll(args):
-  printAllFolderContents(args.folder)
 
 def sortValidation(args):
   if not isFolderByTitle(args.folder):
@@ -46,14 +43,6 @@ subparsers = parser.add_subparsers(help='sub-command help')
 # folders command
 folders_parser = subparsers.add_parser('folders', aliases=['p'], help='print unique titles')
 folders_parser.set_defaults(func=folders)
-
-# all command
-all_parser = subparsers.add_parser('all', aliases=['a'], help='print all non-unique titles of a folder')
-all_parser.set_defaults(func=foldersPrintAll)
-all_parser.add_argument('folder',
-                    nargs='?',
-                    default='root',
-                    help='unique title given by folders command')
 
 
 # sort command

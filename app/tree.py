@@ -51,3 +51,17 @@ def traverseTree(tree: TreeInterface, start_node, nodeCheck, callback):
     for child in tree.getChildren(node):
       recurse(tree, child, depth + 1, callback)
   recurse(tree, start_node, 0, callback)
+
+def getListOfAllNodes(tree: TreeInterface):
+# unique list of all nodes in tree in order
+  def makeListUnique(list):
+  # preserves order
+    seen = set()
+    return [x for x in list if not (x in seen or seen.add(x))]
+
+  nodes = []
+  def addToList(node, depth=0):
+    if node != 'root':
+      nodes.append(node)
+  traverseTree(tree, 'root', (lambda x: True), addToList)
+  return makeListUnique(nodes)
